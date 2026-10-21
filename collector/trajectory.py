@@ -52,6 +52,10 @@ class Trajectory:
     completion_tokens: int = 0
     total_latency_ms: float = 0.0
     created_at: float = field(default_factory=time.time)
+    # Set by filter.repair: a failed run rebuilt from a verified sibling,
+    # and a note naming the source so the provenance stays auditable.
+    repaired: bool = False
+    repair_note: str = ""
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -75,6 +79,8 @@ class Trajectory:
             completion_tokens=d.get("completion_tokens", 0),
             total_latency_ms=d.get("total_latency_ms", 0.0),
             created_at=d.get("created_at", time.time()),
+            repaired=d.get("repaired", False),
+            repair_note=d.get("repair_note", ""),
         )
 
     def code_hash(self) -> str:

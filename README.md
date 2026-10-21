@@ -1,15 +1,21 @@
 # trajectory-to-training
 
-Turn coding-agent trajectories into training data. Capture raw agent runs, filter them for quality, and emit supervised fine-tuning and preference datasets. Every row carries a ground-truth label: did the code pass the tests. Zero human annotation.
+> **How can we trust agents to merge without a human reading every diff?**
+> One question, four repos. [agent-harness](https://github.com/pdj555/agent-harness) is the gate · [agent-eval-harness](https://github.com/pdj555/agent-eval-harness) measures the agent · **trajectory-to-training** keeps only verified work for training · [hard-rag-evals](https://github.com/pdj555/hard-rag-evals) asks the same of answers
+
+Trust has to hold in training as well as at merge time. Coding agents get better by training on their own past runs, so whatever passes verification becomes the next model's habits. This pipeline turns agent runs into fine-tuning and preference data, and the only label it trusts is whether the code passed the tests. No human annotation, no learned reward model.
+
+That makes the verifier the weak point. A run that games its tests is labeled a success here, and it gets trained in. That is why [agent-harness](https://github.com/pdj555/agent-harness) puts a gate that tests alone can't satisfy in front of this pipeline.
 
 ## Quickstart
 
 ```bash
-# No dependencies beyond Python 3.10+. Everything is stdlib.
-python3 examples/worked_example.py
+# Python 3.10+, stdlib only
+python3 examples/worked_example.py   # collect, filter, emit SFT and preference data
+python3 examples/deep_dive.py        # scoring, AST dedup, repair, curriculum, mixing
 ```
 
-That runs a full pass: generates sample trajectories, scores them, filters them, emits SFT and preference datasets, and prints a data-quality report.
+On the seeded synthetic batch of 200 runs, the worked example keeps 123 SFT rows and 37 preference pairs. The deep dive repairs 62 of 72 failed runs from a verified sibling on the same task, and every repaired run records which sibling it came from.
 
 ## Why this matters
 
@@ -23,7 +29,7 @@ Frontier coding models improve on a data flywheel: deploy the agent, collect tra
 
 3. **Filter.** `filter.quality` applies gates in order: verification outcome (keep passes; optionally keep instructive failures for preference data), trajectory length bounds (too short is degenerate, too long is rambling), structural near-deduplication (not just exact-match; structurally identical solutions collapse), and per-task diversity caps so one easy task does not dominate the dataset.
 
-4. **Repair.** Failed trajectories are not all trash. The repair stage identifies failures that are one edit away from passing, a wrong constant, a missing import, an off-by-one, and salvages them into the training set with the fix recorded. Repair is conservative: it only touches failures it can verify.
+4. **Repair.** Failed trajectories are not all trash. When another run on the same task passed, `filter.repair` keeps the failed run's steps up to where it went wrong and continues with the passing sibling's steps and verified code, recording the source. Failures with no passing sibling but a high partial pass rate are kept as near misses for preference data.
 
 5. **Emit.** `datasets.sft` converts passing trajectories to chat-format SFT rows, optionally including the tool-call trace. `datasets.preference` builds chosen/rejected pairs from the same task: a passing trajectory versus a failing one. `datasets.split` does a stratified train/val split by task type.
 
@@ -42,20 +48,21 @@ Multi-generation tracking closes the loop. Each training generation records its 
 ```
 trajectories (raw agent runs)
     |
-collector/      capture tool calls, observations, final code, verification
+collector/trajectory.py   capture tool calls, observations, final code, verification
     |
-scoring/        continuous quality score per trajectory
+filter/scoring.py         continuous quality score per trajectory
+filter/quality.py         verification gate, length bounds, dedup, diversity caps
+filter/near_dedup.py      structural (AST) dedup that catches renamed copies
+filter/repair.py          rebuild failures from a verified sibling, or keep near misses
     |
-filter/         verification gates, length bounds, structural dedup, diversity caps
+datasets/sft.py           SFT converter, with or without the tool-call trace
+datasets/preference.py    chosen/rejected pairs from the same task
+datasets/split.py         stratified train/val split
+datasets/curriculum.py    easy-to-hard ordering
+datasets/mixer.py         weakness-weighted rebalancing
     |
-repair/         salvage near-miss failures with verified fixes
-    |
-datasets/       SFT converter, preference-pair builder, train/val split
-    |
-curriculum/     easy-to-hard ordering
-mixing/         weakness-weighted rebalancing
-    |
-dashboard/      yield rate, failure-mode breakdown, flywheel trends
+dashboard/metrics.py      yield, verification by task type, length stats
+dashboard/flywheel.py     per-generation trends
 ```
 
 ## Design principles
@@ -63,7 +70,7 @@ dashboard/      yield rate, failure-mode breakdown, flywheel trends
 1. **Stdlib only.** No numpy, no pandas, no torch. The pipeline runs on any machine that runs the agent. Dataset files are JSONL.
 2. **Verification is the label.** Filters key off the verification outcome, not a learned reward model. Ground truth beats vibes.
 3. **Traces are optional in SFT.** Including full tool-call traces teaches the model the process; final-code-only teaches the product. The converter supports both so you can ablate.
-4. **Repair is conservative.** A salvaged trajectory must pass verification after repair, or it stays out.
+4. **Repair is conservative.** A repaired trajectory takes the verified final code of a passing sibling on the same task and records its source. Failures with no passing sibling are kept only as near misses for preference data.
 
 ## Worked example
 
