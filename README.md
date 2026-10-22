@@ -7,6 +7,8 @@ Trust has to hold in training as well as at merge time. Coding agents get better
 
 That makes the verifier the weak point. A run that games its tests is labeled a success here, and it gets trained in. That is why [agent-harness](https://github.com/pdj555/agent-harness) puts a gate that tests alone can't satisfy in front of this pipeline.
 
+**[Research summary](docs/research.md)**: why the label is the weak point, results, and next steps, on one page.
+
 ## Quickstart
 
 ```bash
