@@ -47,11 +47,11 @@ python3 examples/gamed_runs.py
 
 ## Where it breaks
 
-- **The label is the weak point.** Without a second check, a run that games its tests is labeled a success and goes straight into the training set, as the table shows.
-- **Preference pairs make it worse.** A gamed run that passes gets paired as "chosen" against an honest run that failed, which teaches the model to prefer the cheat. Among passing runs, the pipeline picks the one with the fewest steps, and a quick hardcoded answer is likely to win that.
-- **The second check needs a reference.** Comparing against a reference works for these two tasks. Most real tasks don't ship one, which is the same problem agent-harness has with specs.
-- **The experiment is small and the gamed runs are mine.** 14 runs, written by hand. The deep dive's 200 runs and flywheel numbers are synthetic.
-- **No model has been trained on the output yet.**
+- The label is the weak point. Without a second check, a run that games its tests is labeled a success and goes straight into the training set, as the table shows.
+- Preference pairs make it worse. A gamed run that passes gets paired as "chosen" against an honest run that failed, which teaches the model to prefer the cheat. Among passing runs, the pipeline picks the one with the fewest steps, and a quick hardcoded answer is likely to win that.
+- The second check needs a reference. Comparing against a reference works for these two tasks. Most real tasks don't ship one, which is the same problem agent-harness has with specs.
+- The experiment is small and the gamed runs are mine. 14 runs, written by hand. The deep dive's 200 runs and flywheel numbers are synthetic.
+- No model has been trained on the output yet.
 
 ## Next
 

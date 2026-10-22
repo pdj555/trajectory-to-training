@@ -34,12 +34,12 @@ python3 examples/deep_dive.py        # scoring, structural dedup, repair, curric
 ## How it works
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/flow-dark.svg">
-  <img alt="Agent runs are labeled by their tests, then by a second check on hidden inputs. Runs that pass both become fine tuning rows and chosen preference samples; runs that fail the second check go to the rejected side. 4 gamed runs pass the tests." src="docs/assets/flow-light.svg" width="100%">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/flow-animated-dark.svg">
+  <img alt="Agent runs are labeled by their tests, then by a second check on hidden inputs. Runs that pass both become fine tuning rows and chosen preference samples; runs that fail the second check go to the rejected side. 4 gamed runs pass the tests." src="docs/assets/flow-animated-light.svg" width="100%">
 </picture>
 
 1. One trajectory per attempt: prompt, tool calls, final code, test result.
-2. A verification gate, length bounds, structural duplicates removed, and a cap for each task.
+2. A verification gate, length bounds, duplicates removed, and a cap for each task.
 3. `filter/second_check.py` relabels runs that pass their tests but fail an independent check.
 4. Fine tuning rows, preference pairs from the same task, and a stratified split that keeps the same mix in each part.
 5. Easy to hard, weighted toward the task types the model fails most.
