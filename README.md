@@ -5,12 +5,14 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
-  <img alt="200 runs, 136 passed their tests, 123 fine-tuning rows, 37 preference pairs. The only label is whether the tests passed." src="docs/assets/hero-light.svg" width="100%">
+  <img alt="With tests as the only label, 4 of 10 fine-tuning rows come from gamed runs and both preference pairs choose a gamed run. A second check removes all 4." src="docs/assets/hero-light.svg" width="100%">
 </picture>
 
 Trust has to hold in training as well as at merge time. Coding agents get better by training on their own past runs, so whatever passes verification becomes the next model's habits. This pipeline turns agent runs into fine-tuning and preference data, and the only label it trusts is whether the code passed the tests. No human annotation, no learned reward model.
 
-That makes the verifier the weak point. A run that games its tests is labeled a success here, and it gets trained in. That is why [agent-harness](https://github.com/pdj555/agent-harness) puts a gate that tests alone can't satisfy in front of this pipeline.
+That makes the verifier the weak point. A run that games its tests is labeled a success here, and it gets trained in. The same problem [agent-harness](https://github.com/pdj555/agent-harness) works on at merge time shows up here as training data.
+
+Measured on real code: with the tests as the only label, 4 of 10 fine-tuning rows come from runs that gamed their tests. A second check against hidden inputs (`filter/second_check.py`) catches all 4 and keeps none. `python3 examples/gamed_runs.py`
 
 **[Research summary](docs/research.md)**: why the label is the weak point, results, and next steps, on one page.
 
@@ -20,6 +22,7 @@ That makes the verifier the weak point. A run that games its tests is labeled a 
 # Python 3.10+, stdlib only
 python3 examples/worked_example.py   # collect, filter, emit SFT and preference data
 python3 examples/deep_dive.py        # scoring, AST dedup, repair, curriculum, mixing
+python3 examples/gamed_runs.py       # gamed runs, with and without a second check
 ```
 
 On the seeded synthetic batch of 200 runs, the worked example keeps 123 SFT rows and 37 preference pairs. The deep dive repairs 62 of 72 failed runs from a verified sibling on the same task, and every repaired run records which sibling it came from.
