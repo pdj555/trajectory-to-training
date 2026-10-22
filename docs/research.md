@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
-  <img alt="With tests as the only label, 4 of 10 fine-tuning rows come from gamed runs and both preference pairs choose a gamed run. A second check removes all 4." src="assets/hero-light.svg" width="100%">
+  <img alt="Ten fine-tuning rows per row of squares. With tests as the label, 4 of 10 came from runs that gamed their tests. With a second check, 0. Preference pairs choosing a cheating run: 2 of 2, then 0 of 2." src="assets/hero-light.svg" width="100%">
 </picture>
 
 Coding agents get better by training on their own past runs. Run the agent, keep the runs that worked, train on them, repeat. Whatever counts as "worked" becomes the next model's habits.
