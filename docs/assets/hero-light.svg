@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-label="Pipeline yield: 200 runs, 136 passed tests, 123 fine-tuning rows, 37 preference pairs.">
+<title>Pipeline yield: 200 runs, 136 passed tests, 123 fine-tuning rows, 37 preference pairs.</title>
+<rect x="0.5" y="0.5" width="1199" height="599" rx="20" fill="#fcfcfb" stroke="#e1e0d9"/>
+<text x="72" y="92" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#898781" text-anchor="start" letter-spacing="2.4">TRAJECTORY-TO-TRAINING</text>
+<text x="72" y="152" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="46" font-weight="680" fill="#0b0b0b" text-anchor="start" letter-spacing="-0.8">What passes the check becomes the next model.</text>
+<text x="72" y="194" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#52514e" text-anchor="start" >Agent runs in, fine-tuning and preference data out. Verification is the label.</text>
+<text x="72" y="262" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#898781" text-anchor="start" letter-spacing="1.6">SEEDED SYNTHETIC BATCH</text><text x="72" y="302" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#52514e" text-anchor="start" >Raw agent runs</text>
+<rect x="402" y="282" width="560" height="28" rx="4" fill="#ecebe6"/>
+<rect x="402" y="282" width="560.0" height="28" rx="4" fill="#2a78d6"/>
+<text x="986" y="303" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#0b0b0b" text-anchor="start" >200</text>
+<text x="72" y="349" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#52514e" text-anchor="start" >Passed their tests</text>
+<rect x="402" y="329" width="560" height="28" rx="4" fill="#ecebe6"/>
+<rect x="402" y="329" width="380.8" height="28" rx="4" fill="#2a78d6"/>
+<text x="986" y="350" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#0b0b0b" text-anchor="start" >136</text>
+<text x="72" y="396" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="400" fill="#52514e" text-anchor="start" >After structural dedup</text>
+<rect x="402" y="376" width="560" height="28" rx="4" fill="#ecebe6"/>
+<rect x="402" y="376" width="344.4" height="28" rx="4" fill="#2a78d6"/>
+<text x="986" y="397" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#0b0b0b" text-anchor="start" >123</text>
+<text x="72" y="443" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#0b0b0b" text-anchor="start" >Fine-tuning rows</text>
+<rect x="402" y="423" width="560" height="28" rx="4" fill="#ecebe6"/>
+<rect x="402" y="423" width="344.4" height="28" rx="4" fill="#2a78d6"/>
+<text x="986" y="444" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="650" fill="#0b0b0b" text-anchor="start" >123</text>
+<text x="72" y="490" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" font-weight="600" fill="#0b0b0b" text-anchor="start" >Preference pairs</text>
+<rect x="402" y="470" width="560" height="28" rx="4" fill="#ecebe6"/>
+<rect x="402" y="470" width="103.6" height="28" rx="4" fill="#2a78d6"/>
+<text x="986" y="491" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="650" fill="#0b0b0b" text-anchor="start" >37</text><line x1="72" y1="540" x2="1128" y2="540" stroke="#e1e0d9"/><circle cx="81" cy="560" r="9" fill="#d03b3b"/><text x="81" y="565.5" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle" >!</text><text x="102" y="566" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="400" fill="#52514e" text-anchor="start" >The only label is “did the tests pass.” A run that games its tests is kept as a success.</text>
+</svg>

@@ -3,6 +3,11 @@
 > **How can we trust agents to merge without a human reading every diff?**
 > One question, four repos. [agent-harness](https://github.com/pdj555/agent-harness) is the gate · [agent-eval-harness](https://github.com/pdj555/agent-eval-harness) measures the agent · **trajectory-to-training** keeps only verified work for training · [hard-rag-evals](https://github.com/pdj555/hard-rag-evals) asks the same of answers
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="200 runs, 136 passed their tests, 123 fine-tuning rows, 37 preference pairs. The only label is whether the tests passed." src="docs/assets/hero-light.svg" width="100%">
+</picture>
+
 Trust has to hold in training as well as at merge time. Coding agents get better by training on their own past runs, so whatever passes verification becomes the next model's habits. This pipeline turns agent runs into fine-tuning and preference data, and the only label it trusts is whether the code passed the tests. No human annotation, no learned reward model.
 
 That makes the verifier the weak point. A run that games its tests is labeled a success here, and it gets trained in. That is why [agent-harness](https://github.com/pdj555/agent-harness) puts a gate that tests alone can't satisfy in front of this pipeline.

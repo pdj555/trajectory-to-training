@@ -1,5 +1,10 @@
 # Research summary
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
+  <img alt="200 runs, 136 passed their tests, 123 fine-tuning rows, 37 preference pairs. The only label is whether the tests passed." src="assets/hero-light.svg" width="100%">
+</picture>
+
 Coding agents get better by training on their own past runs. Run the agent, keep the runs that worked, train on them, repeat. Whatever counts as "worked" becomes the next model's habits.
 
 This repo is that pipeline. It's part of one question: **how can we trust agents to merge without a human reading every diff?** [agent-harness](https://github.com/pdj555/agent-harness) answers it at merge time. This is where the answer compounds, because a bad check here doesn't just let one change through, it trains the behavior in.
