@@ -10,7 +10,7 @@ With tests as the only label, 4 of 10 fine tuning rows came from runs that gamed
 <sub>One question, four repos: **how can we trust agents to merge without a human reading every diff?**<br>
 [agent-harness](https://github.com/pdj555/agent-harness) · [agent-eval-harness](https://github.com/pdj555/agent-eval-harness) · **trajectory-to-training** · [hard-rag-evals](https://github.com/pdj555/hard-rag-evals)</sub>
 
-## The finding
+## The findings
 
 Models learn from whatever passes. Coding agents improve by training on their own runs, and the usual label is whether the tests passed. A run that games its tests passes too. On 14 real runs across two tasks, verified by running their tests:
 
@@ -38,11 +38,11 @@ python3 examples/deep_dive.py        # scoring, structural dedup, repair, curric
   <img alt="Agent runs are labeled by their tests, then by a second check on hidden inputs. Runs that pass both become fine tuning rows and chosen preference samples; runs that fail the second check go to the rejected side. 4 gamed runs pass the tests." src="docs/assets/flow-light.svg" width="100%">
 </picture>
 
-1. **Collect.** One trajectory per attempt: prompt, tool calls, final code, test result.
-2. **Filter.** A verification gate, length bounds, structural duplicates removed, and a cap for each task.
-3. **Check again.** `filter/second_check.py` relabels runs that pass their tests but fail an independent check.
-4. **Emit.** Fine tuning rows, preference pairs from the same task, and a stratified split that keeps the same mix in each part.
-5. **Order and mix.** Easy to hard, weighted toward the task types the model fails most.
+1. One trajectory per attempt: prompt, tool calls, final code, test result.
+2. A verification gate, length bounds, structural duplicates removed, and a cap for each task.
+3. `filter/second_check.py` relabels runs that pass their tests but fail an independent check.
+4. Fine tuning rows, preference pairs from the same task, and a stratified split that keeps the same mix in each part.
+5. Easy to hard, weighted toward the task types the model fails most.
 
 ## Limits
 
