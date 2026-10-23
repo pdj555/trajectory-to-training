@@ -9,6 +9,7 @@ This repo turns runs from coding agents into training data. Each run is labeled 
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
   <img alt="Each row of squares stands for ten fine tuning rows. With tests as the label, 4 of 10 came from runs that gamed their tests. With a second check, 0. Preference pairs that picked a cheating run: 2 of 2, then 0 of 2." src="docs/assets/hero-light.svg" width="100%">
 </picture>
+
 ## The numbers
 
 From `examples/gamed_runs.py`, 14 runs on 2 tasks, 7 attempts per task:
