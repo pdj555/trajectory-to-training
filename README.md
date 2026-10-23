@@ -7,7 +7,7 @@ With tests as the only label, 4 of 10 fine tuning rows came from runs that gamed
   <img alt="Each row of squares stands for ten fine tuning rows. With tests as the label, 4 of 10 came from runs that gamed their tests. With a second check, 0. Preference pairs that picked a cheating run: 2 of 2, then 0 of 2." src="docs/assets/hero-light.svg" width="100%">
 </picture>
 
-<sub>One question, four repos: **how can we trust agents to merge without a human reading every diff?**<br>
+<sub>Related repos:<br>
 [agent-harness](https://github.com/pdj555/agent-harness) · [agent-eval-harness](https://github.com/pdj555/agent-eval-harness) · **trajectory-to-training** · [hard-rag-evals](https://github.com/pdj555/hard-rag-evals)</sub>
 
 ## The findings
@@ -39,10 +39,10 @@ python3 examples/deep_dive.py        # scoring, structural dedup, repair, curric
 </picture>
 
 1. One trajectory per attempt: prompt, tool calls, final code, test result.
-2. A verification gate, length bounds, duplicates removed, and a cap for each task.
+2. A verification gate, length bounds, exact duplicates removed, and a cap for each task.
 3. `filter/second_check.py` relabels runs that pass their tests but fail an independent check.
 4. Fine tuning rows, preference pairs from the same task, and a stratified split that keeps the same mix in each part.
-5. Easy to hard, weighted toward the task types the model fails most.
+5. Runs ordered easy to hard, with the mix weighted toward the task types the model fails most.
 
 ## Limits
 

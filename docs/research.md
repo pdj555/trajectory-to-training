@@ -37,7 +37,7 @@ Then the same 14 runs go through the pipeline twice: labeled by the tests alone,
 | Tests alone | 10 | **4** | **2 of 2** |
 | Tests plus second check | 6 | 0 | 0 of 2 |
 
-The second check caught all 4 gamed runs, wrong on 104 to 631 hidden inputs each, and flipped no honest run.
+The second check caught all 4 gamed runs, which were wrong on 104 to 631 hidden inputs each, and flipped no honest run.
 
 One caveat on the last column. I gave the gamed runs 3 steps and the honest ones 6, the way a shortcut would go, and the preference builder breaks ties between passing runs by fewest steps. With equal steps, the tie goes to whichever run came first.
 

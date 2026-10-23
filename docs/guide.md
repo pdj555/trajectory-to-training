@@ -8,7 +8,7 @@ For what this repo found and why it matters, see the [README](../README.md) and 
 
 2. Each trajectory gets a quality score from its verification outcome, trace structure, and failure signals. Scoring is monotonic and inspectable: you can read a score and know exactly what produced it.
 
-3. `filter.quality` applies gates in order: verification outcome (keep passes; optionally keep instructive failures for preference data), trajectory length bounds (too short is degenerate, too long is rambling), exact deduplication on normalized code, and per-task diversity caps so one easy task does not dominate the dataset. A separate structural pass, `filter.near_dedup`, collapses solutions that share the same code structure even when the text differs.
+3. `filter.quality` applies gates in order: verification outcome (keep passes; optionally keep instructive failures for preference data), trajectory length bounds (too short is degenerate, too long is rambling), exact deduplication on normalized code, and per-task diversity caps so one easy task does not dominate the dataset. A separate structural pass, `filter.near_dedup`, collapses solutions that share the same code structure even when the text differs. The second check, `filter.second_check`, sits after these gates: it relabels a run that passed its tests as failed when the run's code disagrees with a reference on inputs the tests never use.
 
 4. Not every failed trajectory is discarded. When another run on the same task passed, `filter.repair` keeps the failed run's steps up to where it went wrong and continues with the passing sibling's steps and verified code, recording the source. Failures with no passing sibling but a high partial pass rate are kept as near misses for preference data.
 
@@ -35,6 +35,7 @@ filter/scoring.py         continuous quality score per trajectory
 filter/quality.py         verification gate, length bounds, dedup, diversity caps
 filter/near_dedup.py      structural (AST) dedup that catches renamed copies
 filter/repair.py          rebuild failures from a verified sibling, or keep near misses
+filter/second_check.py    relabel runs that pass their tests but fail on hidden inputs
     |
 datasets/sft.py           SFT converter, with or without the tool-call trace
 datasets/preference.py    chosen/rejected pairs from the same task
@@ -55,7 +56,7 @@ dashboard/flywheel.py     per-generation trends
 
 ## Worked example
 
-See `examples/worked_example.py`. It synthesizes trajectories across task types with realistic failure modes, runs the full pipeline, and prints the quality report. Expected output is documented at the top of the file. Verified end to end locally.
+See `examples/worked_example.py`. It synthesizes trajectories across task types with realistic failure modes, runs the full pipeline, and prints the quality report. Expected output is documented at the top of the file. It is verified end to end locally.
 
 ## Related
 
