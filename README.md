@@ -4,6 +4,11 @@ when passing tests was the only label for good training data, 4 of 10 training r
 
 This repo turns runs from coding agents into training data. Each run is labeled by its test result, and this repo adds one more check on the runs that passed before they become training rows.
 
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
+  <img alt="Each row of squares stands for ten fine tuning rows. With tests as the label, 4 of 10 came from runs that gamed their tests. With a second check, 0. Preference pairs that picked a cheating run: 2 of 2, then 0 of 2." src="docs/assets/hero-light.svg" width="100%">
+</picture>
 ## The numbers
 
 From `examples/gamed_runs.py`, 14 runs on 2 tasks, 7 attempts per task:
@@ -14,6 +19,11 @@ From `examples/gamed_runs.py`, 14 runs on 2 tasks, 7 attempts per task:
 - With the second check, 6 training rows remained, 0 from gamed runs, and no preference pair picked a gamed run.
 
 ## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/flow-animated-dark.svg">
+  <img alt="Agent runs are labeled by their tests, then by a second check on hidden inputs. Runs that pass both become fine tuning rows and chosen preference samples; runs that fail the second check are kept out. 4 gamed runs pass the tests." src="docs/assets/flow-animated-light.svg" width="100%">
+</picture>
 
 1. `collector` records one record per attempt: the prompt, the tool calls, the final code, and the test result.
 2. Each run gets a quality score. Gates drop runs that failed, runs outside the length bounds, and duplicates, exact and structural (same code shape, different names), and cap the runs per task.
