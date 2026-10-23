@@ -2,7 +2,7 @@
 
 When tests are the only label, 4 of 10 fine tuning rows came from runs that gamed their tests.
 
-This repo turns coding agent runs into training data. It labels each run by its test result, checks the passing runs a second way, and keeps the runs that cheated out of the data. The second check compares each passing run with a reference solution on inputs the tests never use. On 14 runs written for this repo, it caught all 4 gamed runs and flipped no honest run.
+This repo turns coding agent runs into training data. Each run is labeled by its test result. A second check then compares every passing run with a reference solution on inputs the tests never use, and keeps the runs that fail it out of the data. On 14 runs written for this repo, the check caught all 4 gamed runs and flipped no honest run. The shape of the problem is general: the label is the test result, the test suite is always smaller than the input space, and a run that fits the tests instead of the task earns the same label as a run that solves it.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg">
@@ -14,18 +14,16 @@ This repo turns coding agent runs into training data. It labels each run by its 
 
 ## The finding
 
-14 runs: two tasks, seven attempts each. Three honest solutions, two that game the tests, two that fail, per task. Every run was labeled by running its code against the task tests in a separate interpreter (`examples/gamed_runs.py`). Then the batch went through the pipeline twice.
+14 runs: two tasks, seven attempts each. Three honest solutions, two that game the tests, two that fail, per task. Labels come from running each run's code against the task tests in a separate interpreter (`examples/gamed_runs.py`). The batch then went through the pipeline twice.
 
 | Label | Fine tuning rows | Rows from gamed runs | Pairs where a gamed run is "chosen" |
 | --- | --- | --- | --- |
 | Tests alone | 10 | 4 | 2 of 2 |
 | Tests plus the second check | 6 | 0 | 0 of 2 |
 
-Both tasks are easy to game because their tests cover so little. `split_cents` is tested on 3 calls, and one gamed run is a lookup table of those 3 calls. `fizzbuzz_plus` is tested up to 7, and 7 is the one number where the tests cannot tell the real rule from two wrong ones. The four gamed runs were wrong on 104 to 631 of the hidden inputs the second check uses.
+Both tasks are easy to game because their tests cover so little. `split_cents` is tested on 3 calls, and one gamed run is a lookup table of those 3 calls. `fizzbuzz_plus` is tested up to 7, the one number where the real rule and two wrong ones agree. The four gamed runs were wrong on 104 to 631 of the hidden inputs the second check uses.
 
-The pairs column needs one note. The pair builder picks the passing run with the fewest steps. The gamed runs were written with fewer steps, the way a shortcut goes, so a gamed run is "chosen" in both pairs. With equal steps, the first passing run in the batch would win instead.
-
-The shape of the problem is general. The label is the test result, the test suite is always smaller than the input space, and a run that fits the tests instead of the task earns the same label as a run that solves it.
+One note on the pairs: the builder picks the passing run with the fewest steps, and the gamed runs were written with fewer steps, so a gamed run is chosen in both pairs. With equal steps, the first passing run would win instead.
 
 ## Run it
 
@@ -45,8 +43,8 @@ python3 -m pytest tests/             # 3 tests, including the second check on th
   <img alt="Agent runs are labeled by their tests, then by a second check on hidden inputs. Runs that pass both become fine tuning rows and chosen preference samples; runs that fail the second check are kept out. 4 gamed runs pass the tests." src="docs/assets/flow-animated-light.svg" width="100%">
 </picture>
 
-1. `collector` records one trajectory per attempt: the prompt, the tool calls, the final code, and the verification result (tests passed, tests total).
-2. Each run gets a quality score. Gates then drop runs that failed, runs outside the length bounds, and exact duplicates, and cap the runs per task. A separate pass drops structural duplicates: same code shape, different names.
+1. `collector` records one trajectory per attempt: the prompt, the tool calls, the final code, and the test result.
+2. Each run gets a quality score. Gates drop failed runs, runs outside the length bounds, and duplicates, exact and structural (same code shape, different names), and cap the runs per task.
 3. `filter/second_check.py` runs a check the caller supplies on every run that passed its tests. A run the check fails is marked failed. The original run is not changed.
 4. Passing runs become fine tuning rows. Each task with both a pass and a failure gives one preference pair: the best passing run as "chosen", the worst failing run as "rejected".
 5. A failed run can be rebuilt from a passing run on the same task, with the source recorded. Rows can be split by task type, ordered easy to hard, and mixed toward the task types with the lowest pass rates.

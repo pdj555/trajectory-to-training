@@ -12,7 +12,7 @@ The Collector API is two calls. `open(task_id, task_type, prompt)` starts a reco
 
 ## Scoring: filter/scoring.py
 
-`score_all` gives every trajectory a score from 0 to 1. It is a weight, not a gate. Nothing is dropped for a low score. Four parts, weighted:
+`score_all` gives every trajectory a score from 0 to 1. It is a weight, not a gate: nothing is dropped for a low score. Four parts, weighted:
 
 - Verification, 0.40: the test pass rate, shrunk toward zero when the suite is thin. The shrink is tests total divided by tests total plus 3, so a pass on 1 test counts for less than a pass on 12.
 - Elegance, 0.25: branch count, statement nesting depth, and line count from the parsed code. More of each lowers the score. Code that does not parse gets 0.3 for this part.
@@ -28,11 +28,11 @@ Scores are batch relative. Medians, type counts, and seen hashes all come from t
 1. Verification. Keeps runs that passed. With `keep_failures=True` it keeps failures too, which is what the preference path uses.
 2. Length. Keeps runs with 1 to 50 steps by default.
 3. Exact dedup. Drops repeated code hashes, keeping the first.
-4. Diversity cap. At most 10 runs per task by default. Within a task, passing runs come first, then higher pass rate, then fewer steps. The top of that order is kept.
+4. Diversity cap. At most 10 runs per task by default. Within a task, passing runs come first, then higher pass rate, then fewer steps.
 
 ## Structural dedup: filter/near_dedup.py
 
-Exact dedup misses the common copy: the same solution with new names. `near_dedup` parses the code, rewrites every name, argument, function, class, and attribute to a fixed placeholder, and dedups on that structure. Two runs whose code differs only in names are duplicates here. Code that does not parse falls back to the exact hash. `duplicate_groups` returns the groups of two or more, for inspection.
+Exact dedup misses the common copy: the same solution with new names. `near_dedup` parses the code, rewrites every name, argument, function, class, and attribute to a fixed placeholder, and dedups on that structure. Code that does not parse falls back to the exact hash. `duplicate_groups` returns the groups of two or more, for inspection.
 
 ## The second check: filter/second_check.py
 
@@ -42,7 +42,7 @@ Exact dedup misses the common copy: the same solution with new names. `near_dedu
 - When the check fails a run, `relabel` returns a copy with passed set to false. The copy keeps the original tests passed and tests total counts, so the record still shows that the tests passed.
 - The originals are never modified. The report lists how many runs were checked, which ids flipped, and the reason string the check returned for each.
 
-What a flipped run does next: it no longer passes the verification gate, so it leaves the fine tuning rows, and in preference building it counts as a failure. One detail matters. It keeps a pass rate of 1.0, and the pair builder picks the lowest pass rate as the rejected side, so a flipped run is usually not picked as the rejected side either. It is removed. It is not used as a negative example.
+What a flipped run does next: it leaves the fine tuning rows, and in preference building it counts as a failure. One detail matters. It keeps a pass rate of 1.0, and the pair builder picks the lowest pass rate as the rejected side, so a flipped run is usually not picked as the rejected side either. It is removed, not used as a negative example.
 
 The check used in the experiment is `hidden_input_check` in `examples/gamed_runs.py`. It runs the run code and a reference solution on inputs the tests never use and requires an exact match on all of them.
 
@@ -62,19 +62,19 @@ Repair never writes new code. The final code in a repaired record is the passing
 
 `sft.py`: `emit_sft` turns passing runs into rows of `{"messages": [user prompt, assistant answer], "task_id", "task_type"}`. The assistant answer is the final code, or, with `include_trace=True`, the step list followed by the final code.
 
-`preference.py`: `build_pairs` makes at most one pair per task. It needs at least one pass and one failure on the task. "chosen" is the passing run with the highest pass rate, ties broken by fewest steps. "rejected" is the failing run with the lowest pass rate, ties broken by most steps. The pair carries both pass rates.
+`preference.py`: `build_pairs` makes at most one pair per task, from at least one pass and one failure. "chosen" is the passing run with the highest pass rate, ties broken by fewest steps. "rejected" is the failing run with the lowest pass rate, ties broken by most steps. The pair carries both pass rates.
 
 `split.py`: `stratified_split` groups rows by task type, shuffles with a fixed seed (42), and holds out 20 percent of each type for validation by default. A type with a single row sends nothing to validation.
 
-`curriculum.py`: difficulty scores each run from 0 to 1: trajectory length against a 20 step cap (0.35), the task failure rate in the batch (0.35), and branch count against a cap of 8 (0.30). `emit_curriculum_sft` returns passing runs as SFT rows ordered easy to hard, with difficulty and order attached. `curriculum_bins` cuts the ordered rows into phases.
+`curriculum.py`: difficulty scores each run from 0 to 1: trajectory length against a 20 step cap (0.35), the task failure rate in the batch (0.35), and branch count against a cap of 8 (0.30). `emit_curriculum_sft` returns passing runs as SFT rows ordered easy to hard. `curriculum_bins` cuts the ordered rows into phases.
 
-`mixer.py`: `plan_mix` allocates rows across task types. Strategies: uniform (equal shares), weakness (share grows as the type pass rate falls, with a floor so no type vanishes), target (shares the caller supplies). `apply_mix` takes the allocated count per type, best rows first by quality score when scores are given, else by pass, then brevity. It never invents rows. A type with too few runs gives what it has, and the shortfall goes to types with room.
+`mixer.py`: `plan_mix` allocates rows across task types. Strategies: uniform (equal shares), weakness (share grows as the type pass rate falls, with a floor so no type vanishes), target (shares the caller supplies). `apply_mix` takes the allocated count per type, best rows first. It never invents rows: a type with too few runs gives what it has, and the shortfall goes to types with room.
 
 ## Dashboard: dashboard/
 
 `metrics.py` builds a text report: verification rate by task type, step and token percentiles (p50, p90), the kept and removed count for each gate, and the SFT and preference yields.
 
-`flywheel.py` is a record format, not a measurement. `FlywheelTracker` stores one `GenerationStats` per training generation (raw count, pass rate, mean quality, yields, repaired and near miss counts) and reports the change between generations. Nothing in this repo trains a model. The three generations in `examples/deep_dive.py` are numbers written into the script, and the report only does arithmetic on them.
+`flywheel.py` is a record format, not a measurement. `FlywheelTracker` stores one `GenerationStats` per training generation and reports the change between generations. Nothing in this repo trains a model. The three generations in `examples/deep_dive.py` are numbers written into the script, and the report only does arithmetic on them.
 
 ## Examples
 
