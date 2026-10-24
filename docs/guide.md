@@ -8,6 +8,8 @@ A trajectory is one attempt at one task: task id, a task type string, the prompt
 
 The Collector API is two calls. `open(task_id, task_type, prompt)` starts a record. `close(traj, final_code, verification)` finishes it and stores it. `save_jsonl` and `load_jsonl` move records in and out as JSONL.
 
+A live harness records with the Recorder in `collector/recorder.py` instead of assembling the record by hand. `Recorder(path)` appends one JSON line per event - open, one per `emit` step, close - so the record exists on disk as the run happens, and `Recorder.load` folds a recording back into the same Trajectory records the Collector flow produces, including a run that never closed. Steps pass a scrubbing gate on the way in: secret shaped values in a step's arguments or observation, and in the prompt - key prefixes such as `sk-` and `AKIA`, bearer tokens, and values under password like argument names - are redacted before anything is written. The gate does not touch the final code.
+
 `Trajectory.code_hash()` is the key the exact dedup pass uses: SHA 256, first 16 hex characters, over the code with blank lines and comment only lines removed and trailing spaces stripped.
 
 ## Scoring: filter/scoring.py
