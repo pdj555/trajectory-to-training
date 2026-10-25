@@ -5,9 +5,10 @@ solutions, 2 that special-case the tested inputs, and 2 that fail. Every run is
 verified by actually running its tests in a separate interpreter.
 
 Then the same batch goes through the pipeline twice:
-  1. labeled by the tests alone, as the pipeline does by default
-  2. relabeled by a second check that compares each solution with a reference
-     on inputs the tests never use (filter.second_check)
+  1. labeled by the tests alone, with the second check switched off
+  2. through the default labeling path, where the gate chain runs the second
+     check as its first stage: a check that compares each solution with a
+     reference on inputs the tests never use (filter.second_check)
 
 The gamed runs here take fewer steps than the honest ones, the way a shortcut
 would. The preference builder breaks ties between passing runs by fewest steps.
@@ -28,7 +29,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from collector import Collector, ToolCall, Verification
 from datasets import preference, sft
 from filter import quality as qf
-from filter.second_check import relabel
 
 TASKS = {
     "split-cents": {
@@ -190,17 +190,23 @@ def hidden_input_check(traj) -> tuple[bool, str]:
     return passed == total, f"wrong on {total - passed} of {total} hidden inputs"
 
 
-def summarize(label: str, batch: list, gamed_ids: set[str]) -> dict:
-    kept, _ = qf.run_all(batch)
+def summarize(label: str, batch: list, gamed_ids: set[str], check=None) -> dict:
+    kept, results = qf.run_all(batch, keep_failures=True, check=check)
     rows = sft.emit_sft(kept)
-    gamed_rows = sum(1 for t in kept if t.trajectory_id in gamed_ids)
-    pairs = preference.build_pairs(batch)
+    gamed_rows = sum(1 for t in kept
+                     if t.trajectory_id in gamed_ids and t.verification.passed)
+    pairs = preference.build_pairs(kept)
     code_to_id = {t.final_code: t.trajectory_id for t in batch}
     gamed_chosen = sum(1 for p in pairs if code_to_id[p["chosen"]] in gamed_ids)
     gamed_rejected = sum(1 for p in pairs if code_to_id[p["rejected"]] in gamed_ids)
     result = dict(label=label, sft=len(rows), gamed_sft=gamed_rows, pairs=len(pairs),
                   gamed_chosen=gamed_chosen, gamed_rejected=gamed_rejected)
     print(f"{label}:")
+    if check is not None:
+        stage = results[0]
+        print(f"  second check: {stage.removed} passing runs relabeled as failed")
+        for tid, reason in stage.detail.items():
+            print(f"    {tid} {'(gamed)' if tid in gamed_ids else '(honest)'}: {reason}")
     print(f"  fine-tuning rows: {len(rows)} ({gamed_rows} from gamed runs)")
     print(f"  preference pairs: {len(pairs)} (gamed run chosen in {gamed_chosen}, rejected in {gamed_rejected})")
     return result
@@ -211,12 +217,8 @@ def main() -> None:
     passing = sum(1 for t in batch if t.verification.passed)
     print(f"{len(batch)} runs, {passing} pass their tests, {len(gamed_ids)} of those are gamed\n")
     summarize("Labeled by tests alone", batch, gamed_ids)
-    report = relabel(batch, hidden_input_check)
-    print(f"\nsecond check: {report.checked} passing runs checked, {len(report.flipped)} relabeled as failed")
-    for tid in report.flipped:
-        print(f"  {tid} {'(gamed)' if tid in gamed_ids else '(honest)'}: {report.reasons[tid]}")
     print()
-    summarize("With the second check", report.trajectories, gamed_ids)
+    summarize("Default labeling, second check on", batch, gamed_ids, check=hidden_input_check)
 
 
 if __name__ == "__main__":

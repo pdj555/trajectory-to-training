@@ -27,6 +27,8 @@ Scores are batch relative. Medians, type counts, and seen hashes all come from t
 
 `run_all` applies four gates in order. Each gate returns the survivors and a count of what it removed.
 
+0. Second check, only when the caller passes a `check` to `run_all`. It runs first, before the verification gate, and relabels: every run that passed its tests is checked, and a run the check fails is marked failed, so the gates below treat it as a failure. The stage is reported under the name "second_check", its removed count is the number of runs it marked failed, and its `detail` maps each marked run id to the reason the check returned. With no check passed, labels come from the test results alone.
+
 1. Verification. Keeps runs that passed. With `keep_failures=True` it keeps failures too, which is what the preference path uses.
 2. Length. Keeps runs with 1 to 50 steps by default.
 3. Exact dedup. Drops repeated code hashes, keeping the first.
@@ -47,6 +49,8 @@ Exact dedup misses the common copy: the same solution with new names. `near_dedu
 What a flipped run does next: it leaves the fine tuning rows, and in preference building it counts as a failure. One detail matters. It keeps a pass rate of 1.0, and the pair builder picks the lowest pass rate as the rejected side, so a flipped run is usually not picked as the rejected side either. It is removed, not used as a negative example.
 
 The check used in the experiment is `hidden_input_check` in `examples/gamed_runs.py`. It runs the run code and a reference solution on inputs the tests never use and requires an exact match on all of them.
+
+`relabel` can still be called on its own. It does not have to be: `run_all` in `filter/quality.py` calls it as the first stage of the gate chain when the caller passes the check there, which is the default labeling path the examples and the tests use.
 
 ## Repair: filter/repair.py
 

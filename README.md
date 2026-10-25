@@ -18,6 +18,7 @@ From `examples/gamed_runs.py`, 14 runs on 2 tasks, 7 attempts per task:
 - Labeled by tests alone, the 10 passing runs became 10 training rows, 4 of them from gamed runs. Both preference pairs picked a gamed run as the chosen side.
 - A second check compared every passing run with a reference solution on inputs the tests never use. It marked all 4 gamed runs as failed and flipped no honest run. On one task the gamed runs were wrong on 631 and 427 of 960 hidden inputs. On the other they were wrong on 104 and 106 of 120.
 - With the second check, 6 training rows remained, 0 from gamed runs, and no preference pair picked a gamed run.
+- The second check now runs as the first stage of the gate chain when the caller registers one with `run_all`, so the default labeling path produces that second result in one pass: the 4 gamed runs are marked failed before the gates run, 6 rows come out, 0 of them from gamed runs, and neither preference pair picks a gamed run. Leaving the check off reproduces the tests alone result above.
 
 ## How it works
 
@@ -28,7 +29,7 @@ From `examples/gamed_runs.py`, 14 runs on 2 tasks, 7 attempts per task:
 
 1. `collector` records one record per attempt: the prompt, the tool calls, the final code, and the test result.
 2. Each run gets a quality score. Gates drop runs that failed, runs outside the length bounds, and duplicates, exact and structural (same code shape, different names), and cap the runs per task.
-3. `filter/second_check.py` runs a check the caller supplies on every run that passed its tests. A run the check fails is marked as failed. The original run is not changed.
+3. `filter/second_check.py` runs a check the caller supplies on every run that passed its tests. A run the check fails is marked as failed. The original run is not changed. The gate chain in step 2 runs this check as its first stage when the caller registers one, so a caller labels a batch once and gets the checked labels, not the test labels plus a separate relabeling step.
 4. Runs still marked as passing become training rows. Each task with both a pass and a failure gives one preference pair: the best passing run as chosen, the worst failing run as rejected.
 5. A failed run can be rebuilt from a passing run on the same task, with the source run recorded (`filter/repair.py`). Rows can then be split by task type, ordered easy to hard, and mixed toward the task types with the lowest pass rates.
 
@@ -40,7 +41,7 @@ Python 3.10 or later, standard library only.
 python3 examples/gamed_runs.py       # the numbers above, end to end
 python3 examples/worked_example.py   # the full pipeline on 200 synthetic runs: 123 training rows, 37 preference pairs
 python3 examples/deep_dive.py        # scoring, structural dedup, repair, curriculum, mixing
-python3 -m pytest tests/             # 3 tests, including the second check on the real batch
+python3 -m pytest tests/             # 11 tests, including the second check on the real batch and the default labeling path end to end
 ```
 
 In `examples/deep_dive.py`, repair rebuilt 62 of 72 failed synthetic runs from a passing run on the same task and kept 2 more as near misses.

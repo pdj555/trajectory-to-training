@@ -8,12 +8,13 @@ per filter.
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from collector.trajectory import Trajectory
+from filter.second_check import Check, relabel
 
 
 @dataclass
@@ -21,6 +22,9 @@ class FilterResult:
     kept: list[Trajectory]
     removed: int
     name: str
+    # For the second_check stage: trajectory id -> the reason the check gave
+    # for marking that run failed. Empty for every other stage.
+    detail: dict[str, str] = field(default_factory=dict)
 
 
 def by_verification(trajectories: list[Trajectory],
@@ -94,10 +98,26 @@ def run_all(trajectories: list[Trajectory],
             keep_failures: bool = False,
             min_steps: int = 1,
             max_steps: int = 50,
-            max_per_task: int = 10) -> tuple[list[Trajectory], list[FilterResult]]:
-    """Run the full filter chain. Returns (survivors, per-filter results)."""
+            max_per_task: int = 10,
+            check: Check | None = None) -> tuple[list[Trajectory], list[FilterResult]]:
+    """Run the full filter chain. Returns (survivors, per-filter results).
+
+    When the caller supplies ``check``, the second check runs as the first
+    stage of the chain, before the verification gate: every run that passed
+    its tests is checked, and a run the check fails is marked failed, so the
+    gates below treat it as a failure. The stage is reported like any other
+    under the name "second_check", with ``removed`` counting the runs it
+    marked failed and ``detail`` holding the reason for each one. The
+    originals are not modified. With no check supplied, labels come from the
+    test results alone, as before.
+    """
     results = []
     current = trajectories
+    if check is not None:
+        report = relabel(current, check)
+        current = report.trajectories
+        results.append(FilterResult(kept=current, removed=len(report.flipped),
+                                    name="second_check", detail=report.reasons))
     for fn in (
         lambda ts: by_verification(ts, keep_failures=keep_failures),
         lambda ts: by_length(ts, min_steps=min_steps, max_steps=max_steps),
